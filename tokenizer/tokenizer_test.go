@@ -1,9 +1,7 @@
-package tokenizer_test
+package tokenizer
 
 import (
 	"testing"
-
-	. "compiler/tokenizer"
 )
 
 func TestTokenizer(t *testing.T) {
@@ -11,7 +9,7 @@ func TestTokenizer(t *testing.T) {
 		"11  + 2",
 		"1+2   - 33 - 4",
 		"34--#",
-        "01  - 2a",
+		"01  - 2a",
 	}
 	tokens := [][]Token{
 		{
@@ -36,11 +34,11 @@ func TestTokenizer(t *testing.T) {
 			{Type: MINUS, Literal: "-"},
 			{Type: ILLEGAL, Literal: "#"},
 		},
-        {
-            {Type: NUMBER, Literal: "01"},
-            {Type: MINUS, Literal: "-"},
-            {Type: ILLEGAL, Literal: "2a"},
-        },
+		{
+			{Type: NUMBER, Literal: "01"},
+			{Type: MINUS, Literal: "-"},
+			{Type: ILLEGAL, Literal: "2a"},
+		},
 	}
 
 	for i, input := range inputs {
