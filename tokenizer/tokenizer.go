@@ -11,7 +11,7 @@ const (
 	ILLEGAL TokenType = iota
 	EOF
 
-    // Literals
+	// Literals
 	NUMBER
 
 	// Operators
