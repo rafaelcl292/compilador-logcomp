@@ -9,12 +9,12 @@ import (
 
 func main() {
 	input := os.Args[1]
-
-	result, err := parser.ParseExpression(input)
+	result, err := parser.Parse(input)
 
 	if err != nil {
 		println(err.Error())
-	} else {
-		os.Stdout.WriteString(strconv.Itoa(result))
+		os.Exit(1)
 	}
+
+	os.Stdout.WriteString(strconv.Itoa(result))
 }
