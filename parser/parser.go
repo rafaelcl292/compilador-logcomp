@@ -3,38 +3,79 @@ package parser
 import (
 	"compiler/tokenizer"
 	"errors"
+	"fmt"
 	"strconv"
 )
 
-func ParseExpression(input string) (int, error) {
+func Parse(input string) (int, error) {
 	tok := tokenizer.CreateTokenizer(input)
-	result := 0
-	token := tok.NextToken()
-	if token.Type != tokenizer.NUMBER {
-		return 0, errors.New("Error: 1 expected a number but got " + token.Literal)
+	reg, err := parseTerm(tok)
+	if err != nil {
+		return 0, err
 	}
-	result, _ = strconv.Atoi(token.Literal)
+
 	for {
-		token = tok.NextToken()
-		switch token.Type {
+		switch tok.Next.Type {
 		case tokenizer.EOF:
-			return result, nil
+			return reg, nil
 		case tokenizer.PLUS:
-			token = tok.NextToken()
-			if token.Type != tokenizer.NUMBER {
-				return 0, errors.New("Error: expected a number but got " + token.Literal)
+			tok.NextToken()
+			if tok.Next.Type != tokenizer.NUMBER {
+				return reg, createError("a number", tok.Next)
 			}
-			reg, _ := strconv.Atoi(token.Literal)
-			result += reg
+			num, err := parseTerm(tok)
+			if err != nil {
+				return reg, err
+			}
+			reg += num
 		case tokenizer.MINUS:
-			token = tok.NextToken()
-			if token.Type != tokenizer.NUMBER {
-				return 0, errors.New("Error: expected a number but got " + token.Literal)
+			tok.NextToken()
+			if tok.Next.Type != tokenizer.NUMBER {
+				return reg, createError("a number", tok.Next)
 			}
-			reg, _ := strconv.Atoi(token.Literal)
-			result -= reg
+			num, err := parseTerm(tok)
+			if err != nil {
+				return reg, err
+			}
+			reg -= num
 		default:
-			return 0, errors.New("Error: expected an operator but got " + token.Literal)
+			return reg, createError("an operator", tok.Next)
 		}
 	}
+
+}
+
+func parseTerm(tok *tokenizer.Tokenizer) (int, error) {
+	if tok.Next.Type != tokenizer.NUMBER {
+		return 0, createError("a number", tok.Next)
+	}
+	reg, _ := strconv.Atoi(tok.Next.Literal)
+	for {
+		tok.NextToken()
+		switch tok.Next.Type {
+		case tokenizer.DIVIDE:
+			tok.NextToken()
+			if tok.Next.Type != tokenizer.NUMBER {
+				return 0, createError("a number", tok.Next)
+			}
+			num, _ := strconv.Atoi(tok.Next.Literal)
+			reg /= num
+		case tokenizer.MULTIPLY:
+			tok.NextToken()
+			if tok.Next.Type != tokenizer.NUMBER {
+				return 0, createError("a number", tok.Next)
+			}
+			num, _ := strconv.Atoi(tok.Next.Literal)
+			reg *= num
+		default:
+			return reg, nil
+		}
+	}
+}
+
+func createError(expected string, token tokenizer.Token) error {
+	msg := fmt.Sprintf(
+		"Error: expected '%s' but got '%s'", expected, token.Literal,
+	)
+	return errors.New(msg)
 }

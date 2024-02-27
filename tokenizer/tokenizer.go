@@ -15,8 +15,10 @@ const (
 	NUMBER
 
 	// Operators
-	PLUS  // +
-	MINUS // -
+	PLUS     // +
+	MINUS    // -
+	MULTIPLY // *
+	DIVIDE   // /
 )
 
 type Token struct {
@@ -27,6 +29,7 @@ type Token struct {
 type Tokenizer struct {
 	input []rune
 	pos   int
+	Next  Token
 }
 
 func (t *Tokenizer) scan() rune {
@@ -55,36 +58,55 @@ func (t *Tokenizer) readNumber() string {
 	return number
 }
 
-func (t *Tokenizer) NextToken() Token {
+func (t *Tokenizer) NextToken() {
 	t.skipWhitespace()
 	ch := t.scan()
 
 	switch {
 
 	case ch == 0:
-		return Token{Type: EOF, Literal: ""}
+		t.Next = Token{Type: EOF, Literal: ""}
+		return
 
 	case ch == '+':
 		t.pos++
-		return Token{Type: PLUS, Literal: "+"}
+		t.Next = Token{Type: PLUS, Literal: "+"}
+		return
 
 	case ch == '-':
 		t.pos++
-		return Token{Type: MINUS, Literal: "-"}
+		t.Next = Token{Type: MINUS, Literal: "-"}
+		return
+
+	case ch == '*':
+		t.pos++
+		t.Next = Token{Type: MULTIPLY, Literal: "*"}
+		return
+
+	case ch == '/':
+		t.pos++
+		t.Next = Token{Type: DIVIDE, Literal: "/"}
+		return
 
 	case unicode.IsDigit(ch):
 		number := t.readNumber()
 		if ch = t.scan(); unicode.IsLetter(ch) {
-			return Token{Type: ILLEGAL, Literal: number + string(ch)}
+			t.pos++
+			t.Next = Token{Type: ILLEGAL, Literal: number + string(ch)}
+			return
 		}
-		return Token{Type: NUMBER, Literal: number}
+		t.Next = Token{Type: NUMBER, Literal: number}
+		return
 
 	default:
-		return Token{Type: ILLEGAL, Literal: string(ch)}
-
+		t.pos++
+		t.Next = Token{Type: ILLEGAL, Literal: string(ch)}
+		return
 	}
 }
 
 func CreateTokenizer(input string) *Tokenizer {
-	return &Tokenizer{input: []rune(input)}
+	tok := &Tokenizer{input: []rune(input)}
+	tok.NextToken()
+	return tok
 }
