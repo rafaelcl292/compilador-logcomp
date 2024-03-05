@@ -4,21 +4,23 @@ import (
 	"unicode"
 )
 
-type TokenType int
+type TokenType string
 
 const (
 	// Special tokens
-	ILLEGAL TokenType = iota
-	EOF
+	ILLEGAL TokenType = "ILLEGAL"
+	EOF     TokenType = "EOF"
 
 	// Literals
-	NUMBER
+	NUMBER TokenType = "NUMBER"
 
 	// Operators
-	PLUS     // +
-	MINUS    // -
-	MULTIPLY // *
-	DIVIDE   // /
+	PLUS     TokenType = "PLUS"
+	MINUS    TokenType = "MINUS"
+	MULTIPLY TokenType = "MULTIPLY"
+	DIVIDE   TokenType = "DIVIDE"
+	LPAREN   TokenType = "LPAREN"
+	RPAREN   TokenType = "RPAREN"
 )
 
 type Token struct {
@@ -86,6 +88,16 @@ func (t *Tokenizer) NextToken() {
 	case ch == '/':
 		t.pos++
 		t.Next = Token{Type: DIVIDE, Literal: "/"}
+		return
+
+	case ch == '(':
+		t.pos++
+		t.Next = Token{Type: LPAREN, Literal: "("}
+		return
+
+	case ch == ')':
+		t.pos++
+		t.Next = Token{Type: RPAREN, Literal: ")"}
 		return
 
 	case unicode.IsDigit(ch):

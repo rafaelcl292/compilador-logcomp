@@ -9,73 +9,113 @@ import (
 
 func Parse(input string) (int, error) {
 	tok := tokenizer.CreateTokenizer(input)
-	reg, err := parseTerm(tok)
+	num, err := expression(tok)
 	if err != nil {
 		return 0, err
 	}
+	if tok.Next.Type != tokenizer.EOF {
+		return 0, createError(tokenizer.EOF, tok.Next)
+	}
+	return num, nil
+}
 
+func expression(tok *tokenizer.Tokenizer) (int, error) {
+	reg, err := term(tok)
+	if err != nil {
+		return reg, err
+	}
 	for {
 		switch tok.Next.Type {
-		case tokenizer.EOF:
-			return reg, nil
 		case tokenizer.PLUS:
 			tok.NextToken()
-			if tok.Next.Type != tokenizer.NUMBER {
-				return reg, createError("a number", tok.Next)
-			}
-			num, err := parseTerm(tok)
+			num, err := term(tok)
 			if err != nil {
 				return reg, err
 			}
 			reg += num
 		case tokenizer.MINUS:
 			tok.NextToken()
-			if tok.Next.Type != tokenizer.NUMBER {
-				return reg, createError("a number", tok.Next)
-			}
-			num, err := parseTerm(tok)
+			num, err := term(tok)
 			if err != nil {
 				return reg, err
 			}
 			reg -= num
-		default:
-			return reg, createError("an operator", tok.Next)
-		}
-	}
-
-}
-
-func parseTerm(tok *tokenizer.Tokenizer) (int, error) {
-	if tok.Next.Type != tokenizer.NUMBER {
-		return 0, createError("a number", tok.Next)
-	}
-	reg, _ := strconv.Atoi(tok.Next.Literal)
-	for {
-		tok.NextToken()
-		switch tok.Next.Type {
-		case tokenizer.DIVIDE:
-			tok.NextToken()
-			if tok.Next.Type != tokenizer.NUMBER {
-				return 0, createError("a number", tok.Next)
-			}
-			num, _ := strconv.Atoi(tok.Next.Literal)
-			reg /= num
-		case tokenizer.MULTIPLY:
-			tok.NextToken()
-			if tok.Next.Type != tokenizer.NUMBER {
-				return 0, createError("a number", tok.Next)
-			}
-			num, _ := strconv.Atoi(tok.Next.Literal)
-			reg *= num
 		default:
 			return reg, nil
 		}
 	}
 }
 
-func createError(expected string, token tokenizer.Token) error {
+func term(tok *tokenizer.Tokenizer) (int, error) {
+	reg, err := factor(tok)
+	if err != nil {
+		return reg, err
+	}
+	for {
+		switch tok.Next.Type {
+		case tokenizer.MULTIPLY:
+			tok.NextToken()
+			num, err := factor(tok)
+			if err != nil {
+				return reg, err
+			}
+			reg *= num
+		case tokenizer.DIVIDE:
+			tok.NextToken()
+			num, err := factor(tok)
+			if err != nil {
+				return reg, err
+			}
+			reg /= num
+		default:
+			return reg, nil
+		}
+	}
+}
+
+func factor(tok *tokenizer.Tokenizer) (int, error) {
+	switch tok.Next.Type {
+	case tokenizer.NUMBER:
+		num, _ := strconv.Atoi(tok.Next.Literal)
+		tok.NextToken()
+		return num, nil
+	case tokenizer.PLUS:
+		tok.NextToken()
+		num, err := factor(tok)
+		if err != nil {
+			return 0, err
+		}
+		return num, nil
+	case tokenizer.MINUS:
+		tok.NextToken()
+		num, err := factor(tok)
+		if err != nil {
+			return 0, err
+		}
+		return -num, nil
+	case tokenizer.LPAREN:
+		tok.NextToken()
+		num, err := expression(tok)
+		if err != nil {
+			return 0, err
+		}
+		if tok.Next.Type != tokenizer.RPAREN {
+			return 0, createError(tokenizer.RPAREN, tok.Next)
+		}
+		tok.NextToken()
+		return num, nil
+	default:
+		// return 0, createError(tokenizer.NUMBER, tok.Next)
+        return 0, errors.New("testee")
+	}
+}
+
+func createError(expected tokenizer.TokenType, token tokenizer.Token) error {
 	msg := fmt.Sprintf(
-		"Error: expected '%s' but got '%s'", expected, token.Literal,
+		"Error: expected %s but got %s '%s'",
+		expected,
+		token.Type,
+		token.Literal,
 	)
 	return errors.New(msg)
 }

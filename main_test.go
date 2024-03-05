@@ -21,6 +21,10 @@ func TestMain(t *testing.T) {
 		{"1+2*3", "7"},
 		{"10/10*10-10+10/10", "1"},
 		{"\n1/1   +  2 *  1 -3+4/2", "2"},
+		{"(2+2)/2+(1)", "3"},
+		{"+--++3", "3"},
+		{"4/(1+1)*2", "4"},
+		{"3 - -2/4", "3"},
 	}
 
 	for _, test := range tests {
@@ -50,7 +54,7 @@ func TestMain(t *testing.T) {
 }
 
 func TestMainError(t *testing.T) {
-	inputs := []string{"1 2", ",*", "1 ++4", "-1-10"}
+	inputs := []string{"1 2", ",*", "1 +/4", "((-1-10", "(2*2", "1)2"}
 
 	for i, input := range inputs {
 		flag := strconv.Itoa(i)
