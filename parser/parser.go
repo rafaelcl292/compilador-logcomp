@@ -1,116 +1,96 @@
 package parser
 
 import (
+	"compiler/semantic"
 	"compiler/tokenizer"
+	. "compiler/tokens"
 	"errors"
 	"fmt"
 	"strconv"
 )
 
-func Parse(input string) (int, error) {
-	tok := tokenizer.CreateTokenizer(input)
-	num, err := expression(tok)
+func Parse(tok *tokenizer.Tokenizer) (semantic.Node, error) {
+	node, err := expression(tok)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
-	if tok.Next.Type != tokenizer.EOF {
-		return 0, createError(tokenizer.EOF, tok.Next)
+	if tok.Next.Type != EOF {
+		return nil, createError(EOF, tok.Next)
 	}
-	return num, nil
+	return node, nil
 }
 
-func expression(tok *tokenizer.Tokenizer) (int, error) {
-	reg, err := term(tok)
+func expression(tok *tokenizer.Tokenizer) (semantic.Node, error) {
+	left, err := term(tok)
 	if err != nil {
-		return reg, err
+		return nil, err
 	}
 	for {
-		switch tok.Next.Type {
-		case tokenizer.PLUS:
+		if tok.Next.Type == PLUS || tok.Next.Type == MINUS {
+			op := tok.Next.Literal
 			tok.NextToken()
-			num, err := term(tok)
+			right, err := term(tok)
 			if err != nil {
-				return reg, err
+				return nil, err
 			}
-			reg += num
-		case tokenizer.MINUS:
-			tok.NextToken()
-			num, err := term(tok)
-			if err != nil {
-				return reg, err
-			}
-			reg -= num
-		default:
-			return reg, nil
+			left = &semantic.BinOp{Op: op, Left: left, Right: right}
+		} else {
+			return left, nil
 		}
 	}
 }
 
-func term(tok *tokenizer.Tokenizer) (int, error) {
-	reg, err := factor(tok)
+func term(tok *tokenizer.Tokenizer) (semantic.Node, error) {
+	left, err := factor(tok)
 	if err != nil {
-		return reg, err
+		return nil, err
 	}
 	for {
-		switch tok.Next.Type {
-		case tokenizer.MULTIPLY:
+		if tok.Next.Type == MULTIPLY || tok.Next.Type == DIVIDE {
+			op := tok.Next.Literal
 			tok.NextToken()
-			num, err := factor(tok)
+			right, err := factor(tok)
 			if err != nil {
-				return reg, err
+				return nil, err
 			}
-			reg *= num
-		case tokenizer.DIVIDE:
-			tok.NextToken()
-			num, err := factor(tok)
-			if err != nil {
-				return reg, err
-			}
-			reg /= num
-		default:
-			return reg, nil
+			left = &semantic.BinOp{Op: op, Left: left, Right: right}
+		} else {
+			return left, nil
 		}
 	}
 }
 
-func factor(tok *tokenizer.Tokenizer) (int, error) {
+func factor(tok *tokenizer.Tokenizer) (semantic.Node, error) {
 	switch tok.Next.Type {
-	case tokenizer.NUMBER:
-		num, _ := strconv.Atoi(tok.Next.Literal)
+	case NUMBER:
+		value, _ := strconv.Atoi(tok.Next.Literal)
 		tok.NextToken()
-		return num, nil
-	case tokenizer.PLUS:
+		return &semantic.IntVal{Val: value}, nil
+	case PLUS, MINUS:
+		op := tok.Next.Literal
 		tok.NextToken()
-		num, err := factor(tok)
+		node, err := factor(tok)
 		if err != nil {
-			return 0, err
+			return nil, err
 		}
-		return num, nil
-	case tokenizer.MINUS:
+		return &semantic.UnOp{Op: op, Expr: node}, nil
+	case LPAREN:
 		tok.NextToken()
-		num, err := factor(tok)
+		node, err := expression(tok)
 		if err != nil {
-			return 0, err
+			return nil, err
 		}
-		return -num, nil
-	case tokenizer.LPAREN:
-		tok.NextToken()
-		num, err := expression(tok)
-		if err != nil {
-			return 0, err
-		}
-		if tok.Next.Type != tokenizer.RPAREN {
-			return 0, createError(tokenizer.RPAREN, tok.Next)
+		if tok.Next.Type != RPAREN {
+			return nil, createError(RPAREN, tok.Next)
 		}
 		tok.NextToken()
-		return num, nil
+		return node, nil
 	default:
-		// return 0, createError(tokenizer.NUMBER, tok.Next)
-        return 0, errors.New("testee")
+		return nil, createError(NUMBER, tok.Next)
 	}
 }
 
-func createError(expected tokenizer.TokenType, token tokenizer.Token) error {
+func createError(expected TokenType, token tokenizer.Token) error {
 	msg := fmt.Sprintf(
 		"Error: expected %s but got %s '%s'",
 		expected,

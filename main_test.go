@@ -1,34 +1,20 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
-	"strconv"
 	"testing"
 )
 
-type test struct {
-	input    string
-	expected string
-}
-
 func TestMain(t *testing.T) {
-	tests := []test{
-		{"5", "5"},
-		{"10+10", "20"},
-		{"1 -1   - 1", "-1"},
-		{"19-9-9+1", "2"},
-		{"1+2*3", "7"},
-		{"10/10*10-10+10/10", "1"},
-		{"\n1/1   +  2 *  1 -3+4/2", "2"},
-		{"(2+2)/2+(1)", "3"},
-		{"+--++3", "3"},
-		{"4/(1+1)*2", "4"},
-		{"3 - -2/4", "3"},
+	expected_outputs := []string{
+		"5", "20", "-1", "2", "7", "1", "2", "3", "3", "4", "3", "6",
 	}
 
-	for _, test := range tests {
-		os.Args[1] = test.input
+	for i, expected := range expected_outputs {
+		input_file := "testdata/success/" + fmt.Sprintf("%02d", i)
+		os.Args[1] = input_file
 		r, w, err := os.Pipe()
 		if err != nil {
 			t.Fatal(err)
@@ -44,22 +30,21 @@ func TestMain(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		if string(out[:n]) != test.expected {
+		if string(out[:n]) != expected {
 			t.Fatalf(
-				"expected '%s', got '%s' for input '%s'",
-				test.expected, string(out[:n]), test.input,
+				"expected '%s', got '%s' for test file testdata/%s",
+				expected, string(out[:n]), input_file,
 			)
 		}
 	}
 }
 
 func TestMainError(t *testing.T) {
-	inputs := []string{"1 2", ",*", "1 +/4", "((-1-10", "(2*2", "1)2"}
-
-	for i, input := range inputs {
-		flag := strconv.Itoa(i)
+	for i := 0; i < 6; i++ {
+		flag := fmt.Sprintf("%02d", i)
+		input_file := "testdata/error/" + flag
 		if os.Getenv("FLAG") == flag {
-			os.Args[1] = input
+			os.Args[1] = input_file
 			main()
 			return
 		}
@@ -69,6 +54,6 @@ func TestMainError(t *testing.T) {
 		if e, ok := err.(*exec.ExitError); ok && !e.Success() {
 			continue
 		}
-		t.Fatalf("process ran without error for input '%s'", input)
+		t.Fatalf("process ran without error for input '%s'", input_file)
 	}
 }
