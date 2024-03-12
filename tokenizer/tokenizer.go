@@ -12,7 +12,7 @@ type Token struct {
 }
 
 type Tokenizer struct {
-	input []byte
+	input string
 	ch    rune
 	Next  Token
 }
@@ -22,7 +22,7 @@ func (t *Tokenizer) scan() {
 		t.ch = 0
 		return
 	}
-	r, size := utf8.DecodeRune(t.input)
+	r, size := utf8.DecodeRuneInString(t.input)
 	t.input = t.input[size:]
 	t.ch = r
 }
@@ -74,7 +74,7 @@ func (t *Tokenizer) NextToken() {
 }
 
 func CreateTokenizer(input string) *Tokenizer {
-	tok := &Tokenizer{input: []byte(input)}
+	tok := &Tokenizer{input: input}
 	tok.scan()
 	tok.NextToken()
 	return tok
