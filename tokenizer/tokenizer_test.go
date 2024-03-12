@@ -1,6 +1,7 @@
 package tokenizer
 
 import (
+	. "compiler/tokens"
 	"testing"
 )
 
@@ -12,8 +13,8 @@ func TestTokenizer(t *testing.T) {
 		"01  - 2a",
 		"1+2-3*4/5   ",
 		"  * /0+-",
-        "(1 + 2) / 5",
-        "4/(1+1)*2",
+		"(1 + 2) / 5",
+		"4/(1+1)*2",
 	}
 	tokens := [][]Token{
 		{
@@ -63,28 +64,28 @@ func TestTokenizer(t *testing.T) {
 			{Type: MINUS, Literal: "-"},
 			{Type: EOF, Literal: ""},
 		},
-        {
-            {Type: LPAREN, Literal: "("},
-            {Type: NUMBER, Literal: "1"},
-            {Type: PLUS, Literal: "+"},
-            {Type: NUMBER, Literal: "2"},
-            {Type: RPAREN, Literal: ")"},
-            {Type: DIVIDE, Literal: "/"},
-            {Type: NUMBER, Literal: "5"},
-            {Type: EOF, Literal: ""},
-        },
-        {
-            {Type: NUMBER, Literal: "4"},
-            {Type: DIVIDE, Literal: "/"},
-            {Type: LPAREN, Literal: "("},
-            {Type: NUMBER, Literal: "1"},
-            {Type: PLUS, Literal: "+"},
-            {Type: NUMBER, Literal: "1"},
-            {Type: RPAREN, Literal: ")"},
-            {Type: MULTIPLY, Literal: "*"},
-            {Type: NUMBER, Literal: "2"},
-            {Type: EOF, Literal: ""},
-        },
+		{
+			{Type: LPAREN, Literal: "("},
+			{Type: NUMBER, Literal: "1"},
+			{Type: PLUS, Literal: "+"},
+			{Type: NUMBER, Literal: "2"},
+			{Type: RPAREN, Literal: ")"},
+			{Type: DIVIDE, Literal: "/"},
+			{Type: NUMBER, Literal: "5"},
+			{Type: EOF, Literal: ""},
+		},
+		{
+			{Type: NUMBER, Literal: "4"},
+			{Type: DIVIDE, Literal: "/"},
+			{Type: LPAREN, Literal: "("},
+			{Type: NUMBER, Literal: "1"},
+			{Type: PLUS, Literal: "+"},
+			{Type: NUMBER, Literal: "1"},
+			{Type: RPAREN, Literal: ")"},
+			{Type: MULTIPLY, Literal: "*"},
+			{Type: NUMBER, Literal: "2"},
+			{Type: EOF, Literal: ""},
+		},
 	}
 
 	for i, input := range inputs {
@@ -93,9 +94,11 @@ func TestTokenizer(t *testing.T) {
 			actual := tok.Next
 			if actual != expected {
 				t.Errorf(
-					"Expected \"%v\", got \"%v\"",
+					"Expected \"%v\" of type %v, got \"%v\" of type %v",
 					expected.Literal,
+					expected.Type,
 					actual.Literal,
+					actual.Type,
 				)
 			}
 			if j < len(tokens[i])-1 {

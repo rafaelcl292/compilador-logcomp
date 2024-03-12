@@ -1,26 +1,9 @@
 package tokenizer
 
 import (
+	. "compiler/tokens"
 	"unicode"
-)
-
-type TokenType string
-
-const (
-	// Special tokens
-	ILLEGAL TokenType = "ILLEGAL"
-	EOF     TokenType = "EOF"
-
-	// Literals
-	NUMBER TokenType = "NUMBER"
-
-	// Operators
-	PLUS     TokenType = "PLUS"
-	MINUS    TokenType = "MINUS"
-	MULTIPLY TokenType = "MULTIPLY"
-	DIVIDE   TokenType = "DIVIDE"
-	LPAREN   TokenType = "LPAREN"
-	RPAREN   TokenType = "RPAREN"
+	"unicode/utf8"
 )
 
 type Token struct {
@@ -29,96 +12,70 @@ type Token struct {
 }
 
 type Tokenizer struct {
-	input []rune
-	pos   int
+	input []byte
+	ch    rune
 	Next  Token
 }
 
-func (t *Tokenizer) scan() rune {
-	if t.pos >= len(t.input) {
-		return 0
+func (t *Tokenizer) scan() {
+	if len(t.input) == 0 {
+		t.ch = 0
+		return
 	}
-	return t.input[t.pos]
+	r, size := utf8.DecodeRune(t.input)
+	t.input = t.input[size:]
+	t.ch = r
 }
 
-func (t *Tokenizer) isWhitespace(ch rune) bool {
-	return ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r'
-}
-
-func (t *Tokenizer) skipWhitespace() {
-	for ch := t.scan(); t.isWhitespace(ch); ch = t.scan() {
-		t.pos++
+func (t *Tokenizer) readNumber() {
+	var number []rune
+	for unicode.IsDigit(t.ch) {
+		number = append(number, t.ch)
+		t.scan()
 	}
-}
 
-func (t *Tokenizer) readNumber() string {
-	var number string
-	for ch := t.scan(); unicode.IsDigit(ch); ch = t.scan() {
-		number += string(ch)
-		t.pos++
+	if unicode.IsLetter(t.ch) {
+		t.Next = Token{Type: ILLEGAL, Literal: string(number) + string(t.ch)}
+		return
 	}
-	return number
+
+	t.Next = Token{Type: NUMBER, Literal: string(number)}
 }
 
 func (t *Tokenizer) NextToken() {
-	t.skipWhitespace()
-	ch := t.scan()
+	for unicode.IsSpace(t.ch) {
+		t.scan()
+	}
 
-	switch {
-
-	case ch == 0:
-		t.Next = Token{Type: EOF, Literal: ""}
-		return
-
-	case ch == '+':
-		t.pos++
+	switch t.ch {
+	case '+':
 		t.Next = Token{Type: PLUS, Literal: "+"}
-		return
-
-	case ch == '-':
-		t.pos++
+	case '-':
 		t.Next = Token{Type: MINUS, Literal: "-"}
-		return
-
-	case ch == '*':
-		t.pos++
+	case '*':
 		t.Next = Token{Type: MULTIPLY, Literal: "*"}
-		return
-
-	case ch == '/':
-		t.pos++
+	case '/':
 		t.Next = Token{Type: DIVIDE, Literal: "/"}
-		return
-
-	case ch == '(':
-		t.pos++
+	case '(':
 		t.Next = Token{Type: LPAREN, Literal: "("}
-		return
-
-	case ch == ')':
-		t.pos++
+	case ')':
 		t.Next = Token{Type: RPAREN, Literal: ")"}
-		return
-
-	case unicode.IsDigit(ch):
-		number := t.readNumber()
-		if ch = t.scan(); unicode.IsLetter(ch) {
-			t.pos++
-			t.Next = Token{Type: ILLEGAL, Literal: number + string(ch)}
+	case 0:
+		t.Next = Token{Type: EOF, Literal: ""}
+	default:
+		if unicode.IsDigit(t.ch) {
+			t.readNumber()
 			return
 		}
-		t.Next = Token{Type: NUMBER, Literal: number}
-		return
-
-	default:
-		t.pos++
-		t.Next = Token{Type: ILLEGAL, Literal: string(ch)}
-		return
+		t.Next = Token{Type: ILLEGAL, Literal: string(t.ch)}
 	}
+	t.scan()
+
 }
 
 func CreateTokenizer(input string) *Tokenizer {
-	tok := &Tokenizer{input: []rune(input)}
+	tok := &Tokenizer{input: []byte(input)}
+	tok.scan()
 	tok.NextToken()
 	return tok
 }
