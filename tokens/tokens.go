@@ -6,9 +6,13 @@ const (
 	// Special tokens
 	ILLEGAL TokenType = "ILLEGAL"
 	EOF     TokenType = "EOF"
+	NEWLINE TokenType = "NEWLINE"
 
 	// Literals
-	NUMBER TokenType = "NUMBER"
+	INTEGER TokenType = "INTEGER"
+
+	// Keywords
+	PRINT TokenType = "PRINT"
 
 	// Operators
 	PLUS     TokenType = "PLUS"
@@ -17,4 +21,8 @@ const (
 	DIVIDE   TokenType = "DIVIDE"
 	LPAREN   TokenType = "LPAREN"
 	RPAREN   TokenType = "RPAREN"
+	EQUALS   TokenType = "EQUALS"
+
+	// Variables
+	VARIABLE TokenType = "VARIABLE"
 )

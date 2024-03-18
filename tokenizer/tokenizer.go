@@ -28,22 +28,37 @@ func (t *Tokenizer) scan() {
 }
 
 func (t *Tokenizer) readNumber() {
-	var number []rune
+	var number string
 	for unicode.IsDigit(t.ch) {
-		number = append(number, t.ch)
+		number += string(t.ch)
 		t.scan()
 	}
 
 	if unicode.IsLetter(t.ch) {
-		t.Next = Token{Type: ILLEGAL, Literal: string(number) + string(t.ch)}
+		t.Next = Token{Type: ILLEGAL, Literal: number + string(t.ch)}
 		return
 	}
 
-	t.Next = Token{Type: NUMBER, Literal: string(number)}
+	t.Next = Token{Type: INTEGER, Literal: number}
+}
+
+func (t *Tokenizer) readIdentifier() {
+	var identifier string
+	for unicode.IsLetter(t.ch) || unicode.IsDigit(t.ch) || t.ch == '_' {
+		identifier += string(t.ch)
+		t.scan()
+	}
+
+	switch identifier {
+	case "print":
+		t.Next = Token{Type: PRINT, Literal: "print"}
+	default:
+		t.Next = Token{Type: VARIABLE, Literal: identifier}
+	}
 }
 
 func (t *Tokenizer) NextToken() {
-	for unicode.IsSpace(t.ch) {
+	for unicode.IsSpace(t.ch) && (t.ch != '\n') {
 		t.scan()
 	}
 
@@ -60,11 +75,19 @@ func (t *Tokenizer) NextToken() {
 		t.Next = Token{Type: LPAREN, Literal: "("}
 	case ')':
 		t.Next = Token{Type: RPAREN, Literal: ")"}
+	case '=':
+		t.Next = Token{Type: EQUALS, Literal: "="}
+	case '\n':
+		t.Next = Token{Type: NEWLINE, Literal: "\n"}
 	case 0:
 		t.Next = Token{Type: EOF, Literal: ""}
 	default:
 		if unicode.IsDigit(t.ch) {
 			t.readNumber()
+			return
+		}
+		if unicode.IsLetter(t.ch) {
+			t.readIdentifier()
 			return
 		}
 		t.Next = Token{Type: ILLEGAL, Literal: string(t.ch)}

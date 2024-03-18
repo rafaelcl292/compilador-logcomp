@@ -3,9 +3,9 @@ package main
 import (
 	"compiler/parser"
 	"compiler/preprocessor"
+	"compiler/semantic"
 	"compiler/tokenizer"
 	"os"
-	"strconv"
 )
 
 func main() {
@@ -16,7 +16,7 @@ func main() {
 		os.Exit(1)
 	}
 
-    input := preprocessor.Preprocess(string(bytes))
+	input := preprocessor.Preprocess(string(bytes))
 
 	tokenizer := tokenizer.CreateTokenizer(input)
 
@@ -26,6 +26,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	result := node.Eval()
-	os.Stdout.WriteString(strconv.Itoa(result))
+	st := make(semantic.SymbolTable)
+	node.Eval(&st)
 }

@@ -1,1 +1,10 @@
-10/10*10-10+10/10
+cem = (203 -3)/2
+duzentos_e_20 = 220
+
+resultado = duzentos_e_20 - cem
+print(resultado)
+
+resultado = 0
+print(resultado)
+
+------- print(0)

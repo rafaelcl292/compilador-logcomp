@@ -8,13 +8,14 @@ import (
 )
 
 func TestMain(t *testing.T) {
-	expected_outputs := []string{
-		"5", "20", "-1", "2", "7", "1", "2", "3", "3", "4", "3", "6",
+	outputs := []string{
+		"1\n", "30\n", "0\n1000\n", "", "9\n", "120\n0\n",
+		"2\n-1\n", "1\n0\n",
 	}
 
-	for i, expected := range expected_outputs {
-		input_file := "testdata/success/" + fmt.Sprintf("%02d", i)
-		os.Args[1] = input_file
+	for i, expected := range outputs {
+		filename := "testdata/success/" + fmt.Sprintf("%02d", i)
+		os.Args[1] = filename
 		r, w, err := os.Pipe()
 		if err != nil {
 			t.Fatal(err)
@@ -26,14 +27,14 @@ func TestMain(t *testing.T) {
 
 		out := make([]byte, 100)
 		n, err := r.Read(out)
-		if err != nil {
-			t.Fatal(err)
+		if err != nil && err.Error() != "EOF" {
+			t.Fatal(err, "\nFor input: ", filename)
 		}
 
 		if string(out[:n]) != expected {
 			t.Fatalf(
 				"expected '%s', got '%s' for test file testdata/%s",
-				expected, string(out[:n]), input_file,
+				expected, string(out[:n]), filename,
 			)
 		}
 	}
@@ -42,9 +43,9 @@ func TestMain(t *testing.T) {
 func TestMainError(t *testing.T) {
 	for i := 0; i < 6; i++ {
 		flag := fmt.Sprintf("%02d", i)
-		input_file := "testdata/error/" + flag
+		filename := "testdata/error/" + flag
 		if os.Getenv("FLAG") == flag {
-			os.Args[1] = input_file
+			os.Args[1] = filename
 			main()
 			return
 		}
@@ -54,6 +55,6 @@ func TestMainError(t *testing.T) {
 		if e, ok := err.(*exec.ExitError); ok && !e.Success() {
 			continue
 		}
-		t.Fatalf("process ran without error for input '%s'", input_file)
+		t.Fatalf("process ran without error for input '%s'", filename)
 	}
 }
