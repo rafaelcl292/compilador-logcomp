@@ -2,6 +2,7 @@ package tokenizer
 
 import (
 	. "compiler/tokens"
+	"os"
 	"unicode"
 	"unicode/utf8"
 )
@@ -35,7 +36,8 @@ func (t *Tokenizer) readNumber() {
 	}
 
 	if unicode.IsLetter(t.ch) {
-		t.Next = Token{Type: ILLEGAL, Literal: number + string(t.ch)}
+		println("Tokenizing error: illegal number " + number + string(t.ch))
+		os.Exit(1)
 		return
 	}
 
@@ -90,7 +92,8 @@ func (t *Tokenizer) NextToken() {
 			t.readIdentifier()
 			return
 		}
-		t.Next = Token{Type: ILLEGAL, Literal: string(t.ch)}
+        println("Tokenizing error: illegal character " + string(t.ch))
+        os.Exit(1)
 	}
 	t.scan()
 

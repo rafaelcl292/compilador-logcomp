@@ -20,11 +20,7 @@ func main() {
 
 	tokenizer := tokenizer.CreateTokenizer(input)
 
-	node, err := parser.Parse(tokenizer)
-	if err != nil {
-		println(err.Error())
-		os.Exit(1)
-	}
+	node := parser.Parse(tokenizer)
 
 	st := make(semantic.SymbolTable)
 	node.Eval(&st)

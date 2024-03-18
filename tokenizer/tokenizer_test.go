@@ -2,6 +2,8 @@ package tokenizer
 
 import (
 	. "compiler/tokens"
+	"os"
+	"os/exec"
 	"testing"
 )
 
@@ -9,15 +11,15 @@ func TestTokenizer(t *testing.T) {
 	inputs := []string{
 		"11  + 2",
 		"1+2   - 33 - 4",
-		"34--#",
-		"01  - 2a",
+		// "34--#",
+		// "01  - 2a",
 		"1+2-3*4/5   ",
 		"  * /0+-",
 		"(1 + 2) / 5",
 		"4/(1+1)*2",
 		"print(1+2)",
 		"x1 = 2\nprint(carro_especial)",
-		"4dd",
+		// "4dd",
 	}
 	tokens := [][]Token{
 		{
@@ -36,17 +38,17 @@ func TestTokenizer(t *testing.T) {
 			{Type: INTEGER, Literal: "4"},
 			{Type: EOF, Literal: ""},
 		},
-		{
-			{Type: INTEGER, Literal: "34"},
-			{Type: MINUS, Literal: "-"},
-			{Type: MINUS, Literal: "-"},
-			{Type: ILLEGAL, Literal: "#"},
-		},
-		{
-			{Type: INTEGER, Literal: "01"},
-			{Type: MINUS, Literal: "-"},
-			{Type: ILLEGAL, Literal: "2a"},
-		},
+		// {
+		// 	{Type: INTEGER, Literal: "34"},
+		// 	{Type: MINUS, Literal: "-"},
+		// 	{Type: MINUS, Literal: "-"},
+		// 	{Type: ILLEGAL, Literal: "#"},
+		// },
+		// {
+		// 	{Type: INTEGER, Literal: "01"},
+		// 	{Type: MINUS, Literal: "-"},
+		// 	{Type: ILLEGAL, Literal: "2a"},
+		// },
 		{
 			{Type: INTEGER, Literal: "1"},
 			{Type: PLUS, Literal: "+"},
@@ -109,9 +111,9 @@ func TestTokenizer(t *testing.T) {
 			{Type: RPAREN, Literal: ")"},
 			{Type: EOF, Literal: ""},
 		},
-		{
-			{Type: ILLEGAL, Literal: "4d"},
-		},
+		// {
+		// 	{Type: ILLEGAL, Literal: "4d"},
+		// },
 	}
 
 	for i, input := range inputs {
@@ -131,5 +133,30 @@ func TestTokenizer(t *testing.T) {
 				tok.NextToken()
 			}
 		}
+	}
+}
+
+func TestTokenizerError(t *testing.T) {
+	inputs := []string{
+		"34--#",
+		"01  - 2a",
+		"4dd",
+	}
+	for _, input := range inputs {
+		flag := input
+		if os.Getenv("FLAG") == flag {
+			tok := CreateTokenizer(input)
+			for tok.Next.Type != EOF {
+				tok.NextToken()
+			}
+			return
+		}
+		cmd := exec.Command(os.Args[0], "-test.run=TestTokenizerError")
+		cmd.Env = append(os.Environ(), "FLAG="+flag)
+		err := cmd.Run()
+		if e, ok := err.(*exec.ExitError); ok && !e.Success() {
+			continue
+		}
+		t.Fatalf("process ran without error for input '%s'", input)
 	}
 }

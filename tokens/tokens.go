@@ -4,7 +4,6 @@ type TokenType string
 
 const (
 	// Special tokens
-	ILLEGAL TokenType = "ILLEGAL"
 	EOF     TokenType = "EOF"
 	NEWLINE TokenType = "NEWLINE"
 

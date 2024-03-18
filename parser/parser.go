@@ -4,151 +4,124 @@ import (
 	"compiler/semantic"
 	"compiler/tokenizer"
 	. "compiler/tokens"
-	"errors"
 	"fmt"
+	"os"
 	"strconv"
 )
 
-func Parse(tok *tokenizer.Tokenizer) (semantic.Node, error) {
-	node, err := block(tok)
-	if err != nil {
-		return nil, err
-	}
+func Parse(tok *tokenizer.Tokenizer) semantic.Node {
+	node := block(tok)
 	if tok.Next.Type != EOF {
-		return nil, createError("EOF", tok.Next)
+		createError("EOF", tok.Next)
 	}
-	return node, nil
+	return node
 }
 
-func block(tok *tokenizer.Tokenizer) (semantic.Node, error) {
+func block(tok *tokenizer.Tokenizer) semantic.Node {
 	stmts := make([]semantic.Node, 0)
 	for tok.Next.Type != EOF {
-		stmt, err := statement(tok)
-		if err != nil {
-			return nil, err
-		}
+		stmt := statement(tok)
 		stmts = append(stmts, stmt)
 	}
-	return &semantic.Block{Stmts: stmts}, nil
+	return &semantic.Block{Stmts: stmts}
 }
 
-func statement(tok *tokenizer.Tokenizer) (semantic.Node, error) {
+func statement(tok *tokenizer.Tokenizer) semantic.Node {
 	switch tok.Next.Type {
 	case PRINT:
 		tok.NextToken()
 		if tok.Next.Type != LPAREN {
-			return nil, createError("LPAREN", tok.Next)
+			createError("LPAREN", tok.Next)
 		}
 		tok.NextToken()
-		expr, err := expression(tok)
-		if err != nil {
-			return nil, err
-		}
+		expr := expression(tok)
 		if tok.Next.Type != RPAREN {
-			return nil, createError("RPAREN", tok.Next)
+			createError("RPAREN", tok.Next)
 		}
 		tok.NextToken()
-		return &semantic.UnOp{Op: "print", Expr: expr}, nil
+		return &semantic.UnOp{Op: "print", Expr: expr}
 	case VARIABLE:
 		ident := tok.Next.Literal
 		tok.NextToken()
 		if tok.Next.Type != EQUALS {
-			return nil, createError("EQUALS", tok.Next)
+			createError("EQUALS", tok.Next)
 		}
 		tok.NextToken()
-		expr, err := expression(tok)
-		if err != nil {
-			return nil, err
-		}
-		return &semantic.Assign{Ident: ident, Expr: expr}, nil
+		expr := expression(tok)
+		return &semantic.Assign{Ident: ident, Expr: expr}
 	case NEWLINE:
 		tok.NextToken()
-		return &semantic.NoOp{}, nil
+		return &semantic.NoOp{}
 	default:
-		return nil, createError("STATEMENT", tok.Next)
+		createError("STATEMENT", tok.Next)
+        return nil
 	}
 }
 
-func expression(tok *tokenizer.Tokenizer) (semantic.Node, error) {
-	left, err := term(tok)
-	if err != nil {
-		return nil, err
-	}
+func expression(tok *tokenizer.Tokenizer) semantic.Node {
+	left := term(tok)
 	for {
 		if tok.Next.Type == PLUS || tok.Next.Type == MINUS {
 			op := tok.Next.Literal
 			tok.NextToken()
-			right, err := term(tok)
-			if err != nil {
-				return nil, err
-			}
+			right := term(tok)
 			left = &semantic.BinOp{Op: op, Left: left, Right: right}
 		} else {
-			return left, nil
+			return left
 		}
 	}
 }
 
-func term(tok *tokenizer.Tokenizer) (semantic.Node, error) {
-	left, err := factor(tok)
-	if err != nil {
-		return nil, err
-	}
+func term(tok *tokenizer.Tokenizer) semantic.Node {
+	left := factor(tok)
 	for {
 		if tok.Next.Type == MULTIPLY || tok.Next.Type == DIVIDE {
 			op := tok.Next.Literal
 			tok.NextToken()
-			right, err := factor(tok)
-			if err != nil {
-				return nil, err
-			}
+			right := factor(tok)
 			left = &semantic.BinOp{Op: op, Left: left, Right: right}
 		} else {
-			return left, nil
+			return left
 		}
 	}
 }
 
-func factor(tok *tokenizer.Tokenizer) (semantic.Node, error) {
+func factor(tok *tokenizer.Tokenizer) semantic.Node {
 	switch tok.Next.Type {
 	case INTEGER:
 		value, _ := strconv.Atoi(tok.Next.Literal)
 		tok.NextToken()
-		return &semantic.IntVal{Val: value}, nil
+		return &semantic.IntVal{Val: value}
 	case PLUS, MINUS:
 		op := tok.Next.Literal
 		tok.NextToken()
-		node, err := factor(tok)
-		if err != nil {
-			return nil, err
-		}
-		return &semantic.UnOp{Op: op, Expr: node}, nil
+		node := factor(tok)
+		return &semantic.UnOp{Op: op, Expr: node}
 	case VARIABLE:
 		name := tok.Next.Literal
 		tok.NextToken()
-		return &semantic.Ident{Name: name}, nil
+		return &semantic.Ident{Name: name}
 	case LPAREN:
 		tok.NextToken()
-		node, err := expression(tok)
-		if err != nil {
-			return nil, err
-		}
+		node := expression(tok)
 		if tok.Next.Type != RPAREN {
-			return nil, createError("RPAREN", tok.Next)
+			createError("RPAREN", tok.Next)
 		}
 		tok.NextToken()
-		return node, nil
+		return node
 	default:
-		return nil, createError("EXPRESSION", tok.Next)
+		createError("EXPRESSION", tok.Next)
+		return nil
 	}
 }
 
-func createError(expected string, token tokenizer.Token) error {
+func createError(expected string, token tokenizer.Token) {
 	msg := fmt.Sprintf(
-		"Error: expected %s but got %s '%s'",
+		"Parser error: expected %s but got %s '%s'",
 		expected,
 		token.Type,
 		token.Literal,
 	)
-	return errors.New(msg)
+	println(msg)
+	os.Exit(1)
 }
