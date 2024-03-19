@@ -1,8 +1,6 @@
 package preprocessor
 
-import (
-	"testing"
-)
+import "testing"
 
 func TestPreprocess(t *testing.T) {
 	inputs := []string{

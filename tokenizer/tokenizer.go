@@ -92,8 +92,8 @@ func (t *Tokenizer) NextToken() {
 			t.readIdentifier()
 			return
 		}
-        println("Tokenizing error: illegal character " + string(t.ch))
-        os.Exit(1)
+		println("Tokenizing error: illegal character " + string(t.ch))
+		os.Exit(1)
 	}
 	t.scan()
 

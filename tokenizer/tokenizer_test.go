@@ -11,15 +11,12 @@ func TestTokenizer(t *testing.T) {
 	inputs := []string{
 		"11  + 2",
 		"1+2   - 33 - 4",
-		// "34--#",
-		// "01  - 2a",
 		"1+2-3*4/5   ",
 		"  * /0+-",
 		"(1 + 2) / 5",
 		"4/(1+1)*2",
 		"print(1+2)",
 		"x1 = 2\nprint(carro_especial)",
-		// "4dd",
 	}
 	tokens := [][]Token{
 		{
@@ -38,17 +35,6 @@ func TestTokenizer(t *testing.T) {
 			{Type: INTEGER, Literal: "4"},
 			{Type: EOF, Literal: ""},
 		},
-		// {
-		// 	{Type: INTEGER, Literal: "34"},
-		// 	{Type: MINUS, Literal: "-"},
-		// 	{Type: MINUS, Literal: "-"},
-		// 	{Type: ILLEGAL, Literal: "#"},
-		// },
-		// {
-		// 	{Type: INTEGER, Literal: "01"},
-		// 	{Type: MINUS, Literal: "-"},
-		// 	{Type: ILLEGAL, Literal: "2a"},
-		// },
 		{
 			{Type: INTEGER, Literal: "1"},
 			{Type: PLUS, Literal: "+"},
@@ -111,9 +97,6 @@ func TestTokenizer(t *testing.T) {
 			{Type: RPAREN, Literal: ")"},
 			{Type: EOF, Literal: ""},
 		},
-		// {
-		// 	{Type: ILLEGAL, Literal: "4d"},
-		// },
 	}
 
 	for i, input := range inputs {
