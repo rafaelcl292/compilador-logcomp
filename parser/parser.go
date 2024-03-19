@@ -30,23 +30,14 @@ func statement(tok *tokenizer.Tokenizer) semantic.Node {
 	switch tok.Next.Type {
 	case PRINT:
 		tok.NextToken()
-		if tok.Next.Type != LPAREN {
-			createError("LPAREN", tok.Next)
-		}
-		tok.NextToken()
+		expect(tok, LPAREN)
 		expr := expression(tok)
-		if tok.Next.Type != RPAREN {
-			createError("RPAREN", tok.Next)
-		}
-		tok.NextToken()
+		expect(tok, RPAREN)
 		return &semantic.UnOp{Op: "print", Expr: expr}
 	case VARIABLE:
 		ident := tok.Next.Literal
 		tok.NextToken()
-		if tok.Next.Type != EQUALS {
-			createError("EQUALS", tok.Next)
-		}
-		tok.NextToken()
+		expect(tok, EQUALS)
 		expr := expression(tok)
 		return &semantic.Assign{Ident: ident, Expr: expr}
 	case NEWLINE:
@@ -54,7 +45,7 @@ func statement(tok *tokenizer.Tokenizer) semantic.Node {
 		return &semantic.NoOp{}
 	default:
 		createError("STATEMENT", tok.Next)
-        return nil
+		return nil
 	}
 }
 
@@ -104,10 +95,7 @@ func factor(tok *tokenizer.Tokenizer) semantic.Node {
 	case LPAREN:
 		tok.NextToken()
 		node := expression(tok)
-		if tok.Next.Type != RPAREN {
-			createError("RPAREN", tok.Next)
-		}
-		tok.NextToken()
+		expect(tok, RPAREN)
 		return node
 	default:
 		createError("EXPRESSION", tok.Next)
@@ -124,4 +112,11 @@ func createError(expected string, token tokenizer.Token) {
 	)
 	println(msg)
 	os.Exit(1)
+}
+
+func expect(tok *tokenizer.Tokenizer, expect TokenType) {
+	if tok.Next.Type != expect {
+		createError(string(expect), tok.Next)
+	}
+	tok.NextToken()
 }
