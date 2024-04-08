@@ -12,6 +12,16 @@ const (
 
 	// Keywords
 	PRINT TokenType = "PRINT"
+	READ  TokenType = "READ"
+	END   TokenType = "END"
+	IF    TokenType = "IF"
+	THEN  TokenType = "THEN"
+	ELSE  TokenType = "ELSE"
+	WHILE TokenType = "WHILE"
+	DO    TokenType = "DO"
+	OR    TokenType = "OR"
+	AND   TokenType = "AND"
+	NOT   TokenType = "NOT"
 
 	// Operators
 	PLUS     TokenType = "PLUS"
@@ -21,6 +31,9 @@ const (
 	LPAREN   TokenType = "LPAREN"
 	RPAREN   TokenType = "RPAREN"
 	EQUALS   TokenType = "EQUALS"
+	LESS     TokenType = "LESS"
+	GREATER  TokenType = "GREATER"
+	EQUALITY TokenType = "EQUALITY"
 
 	// Variables
 	VARIABLE TokenType = "VARIABLE"

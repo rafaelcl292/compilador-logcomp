@@ -54,6 +54,26 @@ func (t *Tokenizer) readIdentifier() {
 	switch identifier {
 	case "print":
 		t.Next = Token{Type: PRINT, Literal: "print"}
+	case "read":
+		t.Next = Token{Type: READ, Literal: "read"}
+	case "if":
+		t.Next = Token{Type: IF, Literal: "if"}
+	case "then":
+		t.Next = Token{Type: THEN, Literal: "then"}
+	case "else":
+		t.Next = Token{Type: ELSE, Literal: "else"}
+	case "end":
+		t.Next = Token{Type: END, Literal: "end"}
+	case "while":
+		t.Next = Token{Type: WHILE, Literal: "while"}
+	case "do":
+		t.Next = Token{Type: DO, Literal: "do"}
+	case "or":
+		t.Next = Token{Type: OR, Literal: "or"}
+	case "and":
+		t.Next = Token{Type: AND, Literal: "and"}
+	case "not":
+		t.Next = Token{Type: NOT, Literal: "not"}
 	default:
 		t.Next = Token{Type: VARIABLE, Literal: identifier}
 	}
@@ -78,7 +98,18 @@ func (t *Tokenizer) NextToken() {
 	case ')':
 		t.Next = Token{Type: RPAREN, Literal: ")"}
 	case '=':
+		t.scan()
+		if t.ch == '=' {
+			t.scan()
+			t.Next = Token{Type: EQUALITY, Literal: "=="}
+			return
+		}
 		t.Next = Token{Type: EQUALS, Literal: "="}
+		return
+	case '<':
+		t.Next = Token{Type: LESS, Literal: "<"}
+	case '>':
+		t.Next = Token{Type: GREATER, Literal: ">"}
 	case '\n':
 		t.Next = Token{Type: NEWLINE, Literal: "\n"}
 	case 0:

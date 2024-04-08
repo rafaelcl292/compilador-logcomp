@@ -31,15 +31,58 @@ func statement(tok *tokenizer.Tokenizer) semantic.Node {
 	case PRINT:
 		tok.NextToken()
 		expect(tok, LPAREN)
-		expr := expression(tok)
+		expr := boolExpression(tok)
 		expect(tok, RPAREN)
+        expect(tok, NEWLINE)
 		return &semantic.UnOp{Op: "print", Expr: expr}
 	case VARIABLE:
 		ident := tok.Next.Literal
 		tok.NextToken()
 		expect(tok, EQUALS)
 		expr := expression(tok)
+        expect(tok, NEWLINE)
 		return &semantic.Assign{Ident: ident, Expr: expr}
+	case IF:
+		tok.NextToken()
+		node := boolExpression(tok)
+		expect(tok, THEN)
+        expect(tok, NEWLINE)
+		then_stmts := make([]semantic.Node, 0)
+		for tok.Next.Type != END && tok.Next.Type != ELSE {
+			stmt := statement(tok)
+			then_stmts = append(then_stmts, stmt)
+		}
+		else_stmts := make([]semantic.Node, 0)
+		if tok.Next.Type == ELSE {
+			tok.NextToken()
+			for tok.Next.Type != END {
+				stmt := statement(tok)
+				else_stmts = append(else_stmts, stmt)
+			}
+		}
+		tok.NextToken()
+        expect(tok, NEWLINE)
+		return &semantic.If{
+			Cond: node,
+			Then: semantic.Block{Stmts: then_stmts},
+			Else: semantic.Block{Stmts: else_stmts},
+		}
+	case WHILE:
+		tok.NextToken()
+		node := boolExpression(tok)
+		expect(tok, DO)
+        expect(tok, NEWLINE)
+		stmts := make([]semantic.Node, 0)
+		for tok.Next.Type != END {
+			stmt := statement(tok)
+			stmts = append(stmts, stmt)
+		}
+		tok.NextToken()
+        expect(tok, NEWLINE)
+		return &semantic.While{
+			Cond: node,
+			Do:   semantic.Block{Stmts: stmts},
+		}
 	case NEWLINE:
 		tok.NextToken()
 		return &semantic.NoOp{}
@@ -83,7 +126,7 @@ func factor(tok *tokenizer.Tokenizer) semantic.Node {
 		value, _ := strconv.Atoi(tok.Next.Literal)
 		tok.NextToken()
 		return &semantic.IntVal{Val: value}
-	case PLUS, MINUS:
+	case PLUS, MINUS, NOT:
 		op := tok.Next.Literal
 		tok.NextToken()
 		node := factor(tok)
@@ -94,13 +137,58 @@ func factor(tok *tokenizer.Tokenizer) semantic.Node {
 		return &semantic.Ident{Name: name}
 	case LPAREN:
 		tok.NextToken()
-		node := expression(tok)
+		node := boolExpression(tok)
 		expect(tok, RPAREN)
 		return node
+	case READ:
+		tok.NextToken()
+		expect(tok, LPAREN)
+		expect(tok, RPAREN)
+		return &semantic.Read{}
 	default:
 		createError("EXPRESSION", tok.Next)
 		return nil
 	}
+}
+
+func boolExpression(tok *tokenizer.Tokenizer) semantic.Node {
+	left := boolTerm(tok)
+	for {
+		if tok.Next.Type == OR {
+			op := tok.Next.Literal
+			tok.NextToken()
+			right := boolTerm(tok)
+			left = &semantic.BinOp{Op: op, Left: left, Right: right}
+		} else {
+			return left
+		}
+	}
+}
+
+func boolTerm(tok *tokenizer.Tokenizer) semantic.Node {
+	left := relExpr(tok)
+	for {
+		if tok.Next.Type == AND {
+			op := tok.Next.Literal
+			tok.NextToken()
+			right := relExpr(tok)
+			left = &semantic.BinOp{Op: op, Left: left, Right: right}
+		} else {
+			return left
+		}
+	}
+}
+
+func relExpr(tok *tokenizer.Tokenizer) semantic.Node {
+	left := expression(tok)
+	switch tok.Next.Type {
+	case LESS, GREATER, EQUALITY:
+		op := tok.Next.Literal
+		tok.NextToken()
+		right := expression(tok)
+		return &semantic.BinOp{Op: op, Left: left, Right: right}
+	}
+	return left
 }
 
 func createError(expected string, token tokenizer.Token) {

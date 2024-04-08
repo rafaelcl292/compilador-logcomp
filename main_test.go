@@ -10,7 +10,7 @@ import (
 func TestMain(t *testing.T) {
 	outputs := []string{
 		"1\n", "30\n", "0\n1000\n", "", "9\n", "120\n0\n",
-		"2\n-1\n", "1\n0\n",
+		"2\n-1\n", "1\n0\n", "", "10\n1\n2\n3\n4\n5\n6\n7\n8\n9\n0\n",
 	}
 
 	for i, expected := range outputs {
@@ -41,7 +41,7 @@ func TestMain(t *testing.T) {
 }
 
 func TestMainError(t *testing.T) {
-	for i := 0; i < 6; i++ {
+	for i := 0; i < 9; i++ {
 		flag := fmt.Sprintf("%02d", i)
 		filename := "testdata/error/" + flag
 		if os.Getenv("FLAG") == flag {
