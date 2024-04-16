@@ -74,9 +74,26 @@ func (t *Tokenizer) readIdentifier() {
 		t.Next = Token{Type: AND, Literal: "and"}
 	case "not":
 		t.Next = Token{Type: NOT, Literal: "not"}
+	case "local":
+		t.Next = Token{Type: LOCAL, Literal: "local"}
 	default:
 		t.Next = Token{Type: VARIABLE, Literal: identifier}
 	}
+}
+
+func (t *Tokenizer) readString() {
+	var str string
+	t.scan()
+	for t.ch != '"' {
+		str += string(t.ch)
+		t.scan()
+
+		if t.ch == 0 {
+			println("Tokenizing error: illegal string " + str)
+			os.Exit(1)
+		}
+	}
+	t.Next = Token{Type: STRING, Literal: str}
 }
 
 func (t *Tokenizer) NextToken() {
@@ -112,6 +129,17 @@ func (t *Tokenizer) NextToken() {
 		t.Next = Token{Type: GREATER, Literal: ">"}
 	case '\n':
 		t.Next = Token{Type: NEWLINE, Literal: "\n"}
+	case '.':
+		t.scan()
+		if t.ch == '.' {
+			t.scan()
+			t.Next = Token{Type: CONCAT, Literal: ".."}
+			return
+		}
+		println("Tokenizing error: illegal character .")
+		os.Exit(1)
+	case '"':
+		t.readString()
 	case 0:
 		t.Next = Token{Type: EOF, Literal: ""}
 	default:

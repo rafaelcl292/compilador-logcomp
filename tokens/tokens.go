@@ -9,6 +9,7 @@ const (
 
 	// Literals
 	INTEGER TokenType = "INTEGER"
+	STRING  TokenType = "STRING"
 
 	// Keywords
 	PRINT TokenType = "PRINT"
@@ -22,6 +23,7 @@ const (
 	OR    TokenType = "OR"
 	AND   TokenType = "AND"
 	NOT   TokenType = "NOT"
+	LOCAL TokenType = "LOCAL"
 
 	// Operators
 	PLUS     TokenType = "PLUS"
@@ -34,6 +36,7 @@ const (
 	LESS     TokenType = "LESS"
 	GREATER  TokenType = "GREATER"
 	EQUALITY TokenType = "EQUALITY"
+	CONCAT   TokenType = "CONCAT"
 
 	// Variables
 	VARIABLE TokenType = "VARIABLE"

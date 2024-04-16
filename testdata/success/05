@@ -1,7 +1,8 @@
+local cem
 cem = (203 -3)/2
-duzentos_e_20 = 220
+local duzentos_e_20 = 220
 
-resultado = duzentos_e_20 - cem
+local resultado = duzentos_e_20 - cem
 print(resultado)
 
 resultado = 0
