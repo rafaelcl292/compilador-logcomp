@@ -1,7 +1,7 @@
-i = 1
-n = 5
-x = 1
-y = 1
+local i = 1
+local n = 5
+local x = 1
+local y = 1
 while (i < n) or (i == n) do
     if x > y then
         y = y + 1

@@ -20,6 +20,8 @@ func TestTokenizer(t *testing.T) {
 		"1==2>3<check",
 		"if 1 == 2 then read(1) end",
 		"while 1 < 2 do a=1 end",
+		"\"hello\" .. \"world\"",
+		"local print = 1",
 	}
 	tokens := [][]Token{
 		{
@@ -135,6 +137,19 @@ func TestTokenizer(t *testing.T) {
 			{Type: END, Literal: "end"},
 			{Type: EOF, Literal: ""},
 		},
+		{
+			{Type: STRING, Literal: "hello"},
+			{Type: CONCAT, Literal: ".."},
+			{Type: STRING, Literal: "world"},
+			{Type: EOF, Literal: ""},
+		},
+		{
+			{Type: LOCAL, Literal: "local"},
+			{Type: PRINT, Literal: "print"},
+			{Type: EQUALS, Literal: "="},
+			{Type: INTEGER, Literal: "1"},
+			{Type: EOF, Literal: ""},
+		},
 	}
 
 	for i, input := range inputs {
@@ -162,6 +177,8 @@ func TestTokenizerError(t *testing.T) {
 		"34--#",
 		"01  - 2a",
 		"4dd",
+		"\"hello",
+		"bom.dia",
 	}
 	for _, input := range inputs {
 		flag := input
