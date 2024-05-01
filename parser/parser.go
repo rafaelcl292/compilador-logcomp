@@ -106,7 +106,7 @@ func expression(tok *tokenizer.Tokenizer) semantic.Node {
 	left := term(tok)
 	for {
 		switch tok.Next.Type {
-		case PLUS, MINUS, CONCAT:
+		case PLUS, MINUS:
 			op := tok.Next.Literal
 			tok.NextToken()
 			right := term(tok)
@@ -137,10 +137,10 @@ func factor(tok *tokenizer.Tokenizer) semantic.Node {
 		value, _ := strconv.Atoi(tok.Next.Literal)
 		tok.NextToken()
 		return &semantic.IntVal{Val: value}
-	case STRING:
-		value := tok.Next.Literal
-		tok.NextToken()
-		return &semantic.StrVal{Val: value}
+	// case STRING:
+	// 	value := tok.Next.Literal
+	// 	tok.NextToken()
+	// 	return &semantic.StrVal{Val: value}
 	case PLUS, MINUS, NOT:
 		op := tok.Next.Literal
 		tok.NextToken()

@@ -29,4 +29,6 @@ func main() {
 
 	st := make(semantic.SymbolTable)
 	node.Eval(&st)
+	outfile := file[:len(file)-4] + ".asm"
+	semantic.ASM.WriteToFile(outfile)
 }

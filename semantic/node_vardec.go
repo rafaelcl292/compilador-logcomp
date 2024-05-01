@@ -5,10 +5,11 @@ type VarDec struct {
 	Expr  Node
 }
 
-func (n VarDec) Eval(st *SymbolTable) symbol {
-	st.create(n.Ident)
+func (n VarDec) Eval(st *SymbolTable) {
+	ASM.append("PUSH DWORD 0")
+	shift := sc.next()
+	st.create(n.Ident, shift)
 	if n.Expr != nil {
-		st.set(n.Ident, n.Expr.Eval(st))
+		Assign.Eval(Assign{n.Ident, n.Expr}, st)
 	}
-	return symbol{NONE, nil}
 }

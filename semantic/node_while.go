@@ -5,13 +5,13 @@ type While struct {
 	Do   Block
 }
 
-func (n While) Eval(st *SymbolTable) symbol {
-	s := n.Cond.Eval(st)
-	expect(INT, s)
-	for s.val.(int) != 0 {
-		n.Do.Eval(st)
-		s = n.Cond.Eval(st)
-		expect(INT, s)
-	}
-	return symbol{NONE, nil}
+func (n While) Eval(st *SymbolTable) {
+	loop, exit := lc.next()
+	ASM.append(loop + ":")
+	n.Cond.Eval(st)
+	ASM.append("CMP EAX, 0")
+	ASM.append("JE " + exit)
+	n.Do.Eval(st)
+	ASM.append("JMP " + loop)
+	ASM.append(exit + ":")
 }

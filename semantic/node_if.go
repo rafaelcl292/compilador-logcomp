@@ -6,13 +6,14 @@ type If struct {
 	Else Block
 }
 
-func (n If) Eval(st *SymbolTable) symbol {
-	s := n.Cond.Eval(st)
-	expect(INT, s)
-	if s.val.(int) != 0 {
-		n.Then.Eval(st)
-	} else {
-		n.Else.Eval(st)
-	}
-	return symbol{NONE, nil}
+func (n If) Eval(st *SymbolTable) {
+	elseLabel, endif := lc.next()
+	n.Cond.Eval(st)
+	ASM.append("CMP EAX, 0")
+	ASM.append("JE " + elseLabel)
+	n.Then.Eval(st)
+	ASM.append("JMP " + endif)
+	ASM.append(elseLabel + ":")
+	n.Else.Eval(st)
+	ASM.append(endif + ":")
 }

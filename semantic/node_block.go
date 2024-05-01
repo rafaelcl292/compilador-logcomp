@@ -4,9 +4,8 @@ type Block struct {
 	Stmts []Node
 }
 
-func (n Block) Eval(st *SymbolTable) symbol {
+func (n Block) Eval(st *SymbolTable) {
 	for _, stmt := range n.Stmts {
 		stmt.Eval(st)
 	}
-	return symbol{NONE, nil}
 }

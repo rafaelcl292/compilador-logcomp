@@ -1,5 +1,0 @@
-local t = "test"
-if t == "test" then
-    print(t .. " is a test")
-end
-local a = 1 == 1

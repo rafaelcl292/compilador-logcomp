@@ -2,29 +2,29 @@ package semantic
 
 type SymbolTable map[string]symbol
 
-func (st *SymbolTable) get(ident string) symbol {
-	symbol, ok := (*st)[ident]
+func (st *SymbolTable) get(ident string) int {
+	s, ok := (*st)[ident]
 	if !ok {
 		errorf("Undefined variable '%s'", ident)
 	}
-	if symbol.stype == NONE {
+	if !s.initialized {
 		errorf("Uninitialized variable '%s'", ident)
 	}
-	return symbol
+	return s.shift
 }
 
-func (st *SymbolTable) set(ident string, symbol symbol) {
-	_, ok := (*st)[ident]
+func (st *SymbolTable) set(ident string) {
+	s, ok := (*st)[ident]
 	if !ok {
 		errorf("Undefined variable '%s'", ident)
 	}
-	(*st)[ident] = symbol
+	(*st)[ident] = symbol{true, s.shift}
 }
 
-func (st *SymbolTable) create(ident string) {
+func (st *SymbolTable) create(ident string, shift int) {
 	_, ok := (*st)[ident]
 	if ok {
 		errorf("Variable '%s' already exists", ident)
 	}
-	(*st)[ident] = symbol{NONE, 0}
+	(*st)[ident] = symbol{false, shift}
 }

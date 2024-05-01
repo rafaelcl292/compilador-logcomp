@@ -1,9 +1,0 @@
-print(10)
-local a = 1
-while a < 10 do
-    print(a)
-    a = a + 1
-end
-
-print(1 == 2) -- aaaaaa
-
