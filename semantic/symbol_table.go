@@ -1,7 +1,5 @@
 package semantic
 
-type SymbolTable map[string]symbol
-
 func (st *SymbolTable) get(ident string) int {
 	s, ok := (*st)[ident]
 	if !ok {

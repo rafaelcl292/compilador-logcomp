@@ -6,6 +6,8 @@ type assembler struct {
 	asm string
 }
 
+var ASM = createAsmGenerator()
+
 func createAsmGenerator() *assembler {
 	a := new(assembler)
 	a.asm = asmHeader
