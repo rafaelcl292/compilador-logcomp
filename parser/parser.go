@@ -24,6 +24,23 @@ func block(tok *tokenizer.Tokenizer) semantic.Node {
 	return &semantic.Block{Stmts: stmts}
 }
 
+func funcCall(tok *tokenizer.Tokenizer, ident string) semantic.Node {
+	tok.NextToken()
+	args := make([]semantic.Node, 0)
+	if tok.Next.Type != RPAREN {
+		args = append(args, boolExpression(tok))
+		for tok.Next.Type == COMMA {
+			tok.NextToken()
+			args = append(args, boolExpression(tok))
+		}
+	}
+	expect(tok, RPAREN)
+	return &semantic.FuncCall{
+		Name: ident,
+		Args: semantic.Block{Stmts: args},
+	}
+}
+
 func statement(tok *tokenizer.Tokenizer) semantic.Node {
 	switch tok.Next.Type {
 	case PRINT:
@@ -36,6 +53,11 @@ func statement(tok *tokenizer.Tokenizer) semantic.Node {
 	case VARIABLE:
 		ident := tok.Next.Literal
 		tok.NextToken()
+		if tok.Next.Type == LPAREN {
+			call := funcCall(tok, ident)
+			expect(tok, NEWLINE)
+			return call
+		}
 		expect(tok, EQUALS)
 		expr := boolExpression(tok)
 		expect(tok, NEWLINE)
@@ -93,6 +115,40 @@ func statement(tok *tokenizer.Tokenizer) semantic.Node {
 			Cond: node,
 			Do:   semantic.Block{Stmts: stmts},
 		}
+	case FUNCTION:
+		tok.NextToken()
+		ident := tok.Next.Literal
+		expect(tok, VARIABLE)
+		expect(tok, LPAREN)
+		vars := make([]semantic.VarDec, 0)
+		if tok.Next.Type == VARIABLE {
+			vars = append(vars, semantic.VarDec{Ident: tok.Next.Literal})
+			tok.NextToken()
+			for tok.Next.Type == COMMA {
+				tok.NextToken()
+				vars = append(vars, semantic.VarDec{Ident: tok.Next.Literal})
+				expect(tok, VARIABLE)
+			}
+		}
+		expect(tok, RPAREN)
+		expect(tok, NEWLINE)
+		stmts := make([]semantic.Node, 0)
+		for tok.Next.Type != END {
+			stmt := statement(tok)
+			stmts = append(stmts, stmt)
+		}
+		tok.NextToken()
+		expect(tok, NEWLINE)
+		return &semantic.FuncDec{
+			Ident:     ident,
+			Vars:      vars,
+			FuncBlock: semantic.Block{Stmts: stmts},
+		}
+	case RETURN:
+		tok.NextToken()
+		expr := boolExpression(tok)
+		expect(tok, NEWLINE)
+		return &semantic.Return{Expr: expr}
 	case NEWLINE:
 		tok.NextToken()
 		return &semantic.NoOp{}
@@ -149,6 +205,9 @@ func factor(tok *tokenizer.Tokenizer) semantic.Node {
 	case VARIABLE:
 		name := tok.Next.Literal
 		tok.NextToken()
+		if tok.Next.Type == LPAREN {
+			return funcCall(tok, name)
+		}
 		return &semantic.Ident{Name: name}
 	case LPAREN:
 		tok.NextToken()

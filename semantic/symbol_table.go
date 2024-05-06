@@ -1,6 +1,9 @@
 package semantic
 
 type SymbolTable map[string]symbol
+type funcTable map[string]FuncDec
+
+var ft = make(funcTable)
 
 func (st *SymbolTable) get(ident string) symbol {
 	symbol, ok := (*st)[ident]
@@ -27,4 +30,21 @@ func (st *SymbolTable) create(ident string) {
 		errorf("Variable '%s' already exists", ident)
 	}
 	(*st)[ident] = symbol{NONE, 0}
+}
+
+
+func (ft *funcTable) get(ident string) FuncDec {
+	funcDec, ok := (*ft)[ident]
+	if !ok {
+		errorf("Undefined function '%s'", ident)
+	}
+	return funcDec
+}
+
+func (ft *funcTable) set(ident string, funcDec FuncDec) {
+	_, ok := (*ft)[ident]
+	if ok {
+		errorf("Function '%s' already exists", ident)
+	}
+	(*ft)[ident] = funcDec
 }

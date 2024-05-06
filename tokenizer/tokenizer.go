@@ -76,6 +76,10 @@ func (t *Tokenizer) readIdentifier() {
 		t.Next = Token{Type: NOT, Literal: "not"}
 	case "local":
 		t.Next = Token{Type: LOCAL, Literal: "local"}
+	case "function":
+		t.Next = Token{Type: FUNCTION, Literal: "function"}
+	case "return":
+		t.Next = Token{Type: RETURN, Literal: "return"}
 	default:
 		t.Next = Token{Type: VARIABLE, Literal: identifier}
 	}
@@ -138,6 +142,8 @@ func (t *Tokenizer) NextToken() {
 		}
 		println("Tokenizing error: illegal character .")
 		os.Exit(1)
+	case ',':
+		t.Next = Token{Type: COMMA, Literal: ","}
 	case '"':
 		t.readString()
 	case 0:
